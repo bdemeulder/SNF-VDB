@@ -1,5 +1,5 @@
-# SNF-Vanderbilt
-SNF analysis for Vanderbilt university
+# SNF-Vanderbilt UMC
+SNF analysis with Minoo Bagheri, Vanderbilt Center for Precicion Medicine
 
 This repository will detail how to perform a SNF analysis, choose the correct number of clusters, characterise the clusters and produce figures.
 This analysis is tested using data subsets included in the repository. Data formatting is crucial for the analysis to work and should be replicated exactly.
