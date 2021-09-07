@@ -153,7 +153,9 @@ write.table(clin_table2, file="clin_table2.csv", sep=";")
 prot_table<-omic_compare2(prot2, clin_data=clinical, group="group")
 write.table(prot_table, file="prot_table.csv", sep=";")
 
-# Characterise one cluster against the rest: example for K=4, comparing cluster #1 against the rest
+########################################################################################################
+### Characterise one cluster against the rest: example for K=4, comparing cluster #1 against the rest ##
+########################################################################################################
 
 group41<-cluster[[4]]$consensusClass
 group41[which(group41!="1")]<-"4"
@@ -166,3 +168,76 @@ write.table(clin_table41, file="clin_table41.csv", sep=";")
 # Omic tables
 prot_table41<-omic_compare2(prot2, clin_data=clinical, group="group41")
 write.table(prot_table41, file="prot_table41.csv", sep=";")
+
+####################
+## Alluvial plots ##
+####################
+
+# This code is to compare two clusterings and make alluvial plots; I can update it for 3 or more if needed. 
+
+library(ggplot2)
+library(ggalluvial)
+library(plyr)
+
+.prePdata <- function(pcluster_list){
+        temp <- pcluster_list
+        names(temp) <- NULL
+        sample <- unique(names(unlist(temp)))
+        rm(temp)
+        pdata_raw <- matrix(NA,nrow=length(sample),ncol=length(pcluster_list))
+        rownames(pdata_raw) = sample
+        for (i in 1:ncol(pdata_raw)){
+                sample2 <- intersect(sample,names(pcluster_list[[i]]))
+                pdata_raw[sample2,i] = pcluster_list[[i]]
+                }
+        pdata_raw <- pdata_raw[rowSums(is.na(pdata_raw))==0,]
+        pdata_raw <- as.data.frame(pdata_raw)
+        colnames(pdata_raw) <- names(pcluster_list)
+        
+        pdata.res <- count(pdata_raw)
+        res <- pdata.res
+        for (j in 1:(ncol(res)-1)){res[,j]<-as.factor(res[,j])}
+        return(res)
+}
+
+# In cluster 1 and cluster 2, you need to put the interesting clusterings as based on the consensus clustering results
+# You just need to replace the 3 or 6 with the numbers of clusters
+
+# For alluvial plots for more than two clusters: (below is an example for 4 clusters)
+# - Place the interesting clusters in clusterx
+# - place them all in pcluster
+# - change the numbers in pdata to reflect the correct number of clusterings to plot
+# - change the names(pdata) to correspond to the correct length
+# - In the ggplot, add the correct list of clusterings in aes(y=freq, axis1=cluster1, axis2=cluster2...)
+# - Change the limit of breaks=1:4 for the number of clusterings 
+# - Change the labels to reflect your choice of clusterings
+# - Change the title of the figure in ggtitle
+
+cluster1<-cluster[[3]]$consensusClass
+cluster2<-cluster[[6]]$consensusClass
+cluster3<-cluster[[8]]$consensusClass
+cluster4<-cluster[[10]]$consensusClass
+
+pcluster<-list(cluster1, cluster2, cluster3, cluster4)
+pdata_all<-.prePdata(pcluster)
+pdata<-.prePdata(pcluster[c(1, 2, 3, 4)])
+# You can replace the Cluster 1 and Cluster2 names below to more relevant names
+names(pdata)<-c("Cluster1", "Cluster2", "Cluster3", "Cluster4", "freq")
+cbbPalette<-c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+# In the plot function, change ClusterX with the same names as in names(pdata)
+# geom_flow(aes(fill=Cluster1)) decides which clustering should be used to color the plot. 
+# labels=c("K=3", "K=6") also needs to be updated with your choice of number of clusters.
+ggplot(pdata,
+  aes(y = freq, axis1 = Cluster1, axis2 = Cluster2, axis3 = Cluster3, axis4 = Cluster4)) +
+  geom_flow(aes(fill=Cluster2), aes.bind =TRUE, reverse = TRUE, width= 1/10) +
+  geom_stratum(width= 1/10, reverse = TRUE) +
+  geom_text(stat = "stratum", size= 3.5, label.strata = TRUE, reverse = TRUE) +
+  scale_x_continuous(breaks=1:4, labels=c("K = 3", "K = 6", "K=8", "K=10")) +
+  scale_fill_manual(values=cbbPalette) +
+  theme(panel.background = element_rect(fill=NA), legend.position = "bottom", 
+        axis.text.y = element_text(colour = "white"), 
+        axis.title.y = element_text(colour = "white"), 
+        axis.ticks.y = element_line(colour="white")) + 
+  ggtitle("Stable patient allocations for K=3, K=6, K=8 and K=10 clusterings") 
+  
