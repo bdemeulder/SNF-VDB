@@ -7,7 +7,11 @@ This analysis is tested using data subsets included in the repository. Data form
 Follow the CodetoRun.R file to perform the analysis
 
 In the Code folder are the supporting functions.
+
 In the Data folder are the test datasets.
+
 In the Figures folder are examples of the images produced. 
+
+
 
 This code is written by Bertrand De Meulder, Association EISBM, Lyon, France. 
