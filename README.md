@@ -4,7 +4,10 @@ SNF analysis with Minoo Bagheri, Vanderbilt University Medical Centre, Centre fo
 This repository will detail how to perform a SNF analysis, choose the correct number of clusters, characterise the clusters and produce figures.
 This analysis is tested using data subsets included in the repository. Data formatting is crucial for the analysis to work and should be replicated exactly.
 
-This code is written by Bertrand De Meulder, Association EISBM, Lyon, France. 
-
-
 Follow the CodetoRun.R file to perform the analysis
+
+In the Code folder are the supporting functions.
+In the Data folder are the test datasets.
+In the Figures folder are examples of the images produced. 
+
+This code is written by Bertrand De Meulder, Association EISBM, Lyon, France. 
