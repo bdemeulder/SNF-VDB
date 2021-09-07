@@ -162,3 +162,45 @@ consensClustAUC <- function(consensusMatrix){
   return(integral)
 }
 
+regressOutCovsEffect <- function(dataSet, clinicalSet, covariates, signThreshold=0.05){
+  ## Performs a linear model adjustment on each feature of <dataSet> separately, using <covariates> as explicative
+  #  variables. The features for which at least one of the coefficient is significant (<=signThreshold) are 
+  #  replaced by the residuals of the models. When no coefficient is significant, the values are kept as they are.
+  # 
+  # @params <dataSet> the data from which the effect of the covariates need to be removed
+  # @params <clinicalSet> the clinical dataset, must at least contain columns which names are the same as <covariates>, and all samples present in <dataSet>
+  # @params <covariates> string vector containing the names of the covariates to regress out
+  # @params <signThreshold> value below which a coefficient from the linear model is regarded as significant
+  # @return <corrected> the dataset after correction
+  
+  ## Reduce <clinicalSet> to the samples available in <dataSet>, 
+  #  and remove the ones that have no values for the <covariates> from both sets.
+  cat("Preprocessing...\n")
+  clinical0 = clinicalSet[(match(rownames(dataSet),rownames(clinicalSet))), covariates]
+  # TODO: find a more general selection method ----
+  cat(length(which(is.na(clinical0[,1]) & is.na(clinical0[,2]))), 
+      "samples were removed because they had missing values for covariates.\n")
+  clinical = clinical0[-which(is.na(clinical0[,1]) & is.na(clinical0[,2])),]
+  data = dataSet[-which(is.na(clinical0[,1]) & is.na(clinical0[,2])),]
+  #print(cbind(rownames(data), rownames(clinical)))
+  cat("Dimensions of the matrices:",dim(data),dim(clinical),"\n")
+  
+  
+  ## Perform the linear model.
+  cat("Calculating the linear models.\n")
+  #TODO: be more general about the number of covariates ----
+  linMod = lm(data~clinical[,1]*clinical[,2]) # linear model for each feature separately
+  cat("Getting their summary...\n")
+  summaryLm = summary(linMod) # get summary
+  coefs = t(sapply(summaryLm, function(val) val$coefficients[-c(1),4])) # and the p-values for each coefficient except the intercept
+  for(i in 1:ncol(coefs)){  cat(colnames(coefs)[i],sum(coefs[,i]<signThreshold),"\n")  } # print out the number of models for which each coefficient is significant
+  corrected = matrix(data=NA, nrow=nrow(data), ncol=ncol(data)) # filled with residuals if model is significant, or original data otherwise
+  for(f in 1:ncol(corrected)){ # for each feature
+    if(sum(coefs[f,]<signThreshold)>0){  # if at least one of the coefficients of the linear model is significant
+      corrected[,f] = summaryLm[[f]]$residuals # replace the data with the residuals from the model
+    }else{  corrected[,f] = data[,f]  } # otherwise keep the original vector
+  }
+  dimnames(corrected) = dimnames(data)
+  
+  return(corrected)
+} # end of regressOutCovsEffect
