@@ -2,10 +2,10 @@ library(SNFtool)
 library(ConsensusClusterPlus)
 library(FSA)
 
-source('supportFunctions.r')
-source('tab_clin.r')
-source('tab_clin2.r')
-source('omic_compare2.r')
+source('code/supportFunctions.r')
+source('code/tab_clin.r')
+source('code/tab_clin2.r')
+source('code/omic_compare2.r')
 
 ############################
 #### Handprint analysis ####
