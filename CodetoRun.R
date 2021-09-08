@@ -124,7 +124,7 @@ save(cluster, file="clustering.Rdata", compress=T)
 
 # This section will produce the statistical comparison tables between clusters for the clinical and omics data
 # This assumes you have your clinical data as a data frame with patients in lines and features in rows. 
-# Put the number of clusters you want to characterise in K
+# Put the number of clusters you want to characterise in k
 k = 3 
 group<-cluster[[k]]$consensusClass
 test<-rownames(mergedNetwork)
@@ -173,8 +173,6 @@ write.table(prot_table41, file="prot_table41.csv", sep=";")
 ## Alluvial plots ##
 ####################
 
-# This code is to compare two clusterings and make alluvial plots; I can update it for 3 or more if needed. 
-
 library(ggplot2)
 library(ggalluvial)
 library(plyr)
@@ -200,15 +198,13 @@ library(plyr)
         return(res)
 }
 
-# In cluster 1 and cluster 2, you need to put the interesting clusterings as based on the consensus clustering results
-# You just need to replace the 3 or 6 with the numbers of clusters
-
-# For alluvial plots for more than two clusters: (below is an example for 4 clusters)
-# - Place the interesting clusters in clusterx
+# For alluvial plots for more than two clusters: (below is an example for 4 clusters with K=3, 6, 8 and 10)
+# - Place the interesting clusters in clusterx. Place them in ascending number of clusters. 
 # - place them all in pcluster
 # - change the numbers in pdata to reflect the correct number of clusterings to plot
-# - change the names(pdata) to correspond to the correct length
-# - In the ggplot, add the correct list of clusterings in aes(y=freq, axis1=cluster1, axis2=cluster2...)
+# - change the names(pdata) to correspond to the correct length. There should always be 'freq' added last
+# - In the ggplot, add the correct list of clusterings in aes(y=freq, axis1=Cluster1, axis2=Cluster2...). The names here have to be the same as the names of pdata.
+# - The colors of the alluvial are given by geom_flow(aes(fill=Cluster2)... 
 # - Change the limit of breaks=1:4 for the number of clusterings 
 # - Change the labels to reflect your choice of clusterings
 # - Change the title of the figure in ggtitle
