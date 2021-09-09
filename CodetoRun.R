@@ -66,7 +66,22 @@ row.names(clinical2)<-clin.names
 colnames(clinical2)<-colnames(clin)
 clinical<-as.data.frame(clinical2)
 
-# Manual SNF
+###########################
+#### Linear correction ####
+###########################
+
+# Add any variable from the clinical data which effects we want to remove.
+# ! Names in covariates have to be the same as in the clinical data.
+covariates=c("age.highest", "sex")
+
+# Example for the proteomics dataset
+# Don't forget to replace the corrected datasets in the SNF below
+prot2_Corr<-regressOutCovsEffect(dataSet=prot2, clinicalSet=clinical, covariates=covariates, signThreshold = 0.05)
+
+
+################
+## Manual SNF ##
+################
 
 dist1<-as.matrix(dist(prot2))
 dist2<-as.matrix(dist(metabo2))
@@ -151,6 +166,8 @@ write.table(clin_table2, file="clin_table2.csv", sep=";")
 # Producing the omics tables
 
 prot_table<-omic_compare2(prot2, clin_data=clinical, group="group")
+FDR<-p.adjust(prot_table$'Pval_ANOVA*', method='fdr')
+prot_table$FDR<-FDR
 write.table(prot_table, file="prot_table.csv", sep=";")
 
 ########################################################################################################
@@ -167,6 +184,8 @@ write.table(clin_table41, file="clin_table41.csv", sep=";")
 
 # Omic tables
 prot_table41<-omic_compare2(prot2, clin_data=clinical, group="group41")
+FDR<-p.adjust(prot_table41$'Pval_ANOVA*', method='fdr')
+prot_table41$FDR<-FDR
 write.table(prot_table41, file="prot_table41.csv", sep=";")
 
 ####################
