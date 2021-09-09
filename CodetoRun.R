@@ -166,8 +166,7 @@ write.table(clin_table2, file="clin_table2.csv", sep=";")
 # Producing the omics tables
 
 prot_table<-omic_compare2(prot2, clin_data=clinical, group="group")
-FDR<-p.adjust(prot_table$'Pval_ANOVA*', method='fdr')
-prot_table$FDR<-FDR
+prot_table$FDR<-p.adjust(prot_table$'Pval_ANOVA*', method='fdr')
 write.table(prot_table, file="prot_table.csv", sep=";")
 
 ########################################################################################################
@@ -184,8 +183,7 @@ write.table(clin_table41, file="clin_table41.csv", sep=";")
 
 # Omic tables
 prot_table41<-omic_compare2(prot2, clin_data=clinical, group="group41")
-FDR<-p.adjust(prot_table41$'Pval_ANOVA*', method='fdr')
-prot_table41$FDR<-FDR
+prot_table41$FDR<-p.adjust(prot_table41$'Pval_ANOVA*', method='fdr')
 write.table(prot_table41, file="prot_table41.csv", sep=";")
 
 ####################
