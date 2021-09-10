@@ -111,6 +111,7 @@ omic_compare2 <- function(data, # numeric matrix or data frame of omics. Patient
     #interaction <- (sapply(1:ncol(data),function(x){anov <- tryCatch(Anova(lm(formula=eval(parse(text=paste('data[,',x,']~',paste(rep('.',n),collapse = ":"),sep=""))),clin)),error=function(e){NaN}); min(anov[grep(':',row.names(anov)),'Pr(>F)'])  })<0.05)    
     pval_chisq <- signif(sapply(1:ncol(omics),function(x){tryCatch(chisq.test(as.character(is.na(omics[,x])),y=clin[,'group'])$p.value,error=function(e){NaN})}),digit)
     pval_anova <-signif(sapply(1:ncol(omics),function(x){tryCatch(Anova(lm(formula=omics[,x]~. ,clin))['group','Pr(>F)'],error=function(e){NaN}) }),digit)
+    pval_fdr<-p.adjust(pval_anova, method='fdr')
     pval_Tukey_tmp <- lapply(1:ncol(omics),function(x){tryCatch({summary(glht(tryCatch(lm(formula=omics[,x]~.,clin)), linfct=mcp(group="Tukey", interaction_average = TRUE, covariate_average = TRUE)))},error=function(e){NaN})})
     pval_Tukey_tmp2 <- sapply(pval_Tukey_tmp,function(x){is.list(x)})
     if(any(pval_Tukey_tmp2)){
@@ -127,24 +128,24 @@ omic_compare2 <- function(data, # numeric matrix or data frame of omics. Patient
       contrast <- 'Pval'
     }
     if(all(is.nan(pval_chisq))){
-      res <- data.frame(meansd2, medianiqr2, pval_shapiro, pval_levene, pval_bartlett, pval_anova, pval_Tukey)
+      res <- data.frame(meansd2, medianiqr2, pval_shapiro, pval_levene, pval_bartlett, pval_anova, pval_fdr, pval_Tukey)
       names(res) <- c(paste(levels(clin[,'group']),' (n=',summary(clin[,'group']), ') Mean +/- SD',sep=""),
                       paste(levels(clin[,'group']),' (n=',summary(clin[,'group']), ') Median (IQR)',sep=""),
-                      'Pval_Shapiro','Pval_Levene','Pval_Bartlett','Pval_ANOVA*',
+                      'Pval_Shapiro','Pval_Levene','Pval_Bartlett','Pval_ANOVA*', 'Pval_FDR',
                       paste(contrast," (Tukey*)",sep=""))
       
       row.names(res) <- colnames(omics)
       cat('Pval_Shapiro tests for normality \nPval_Levene and Pval_Bartlett test for homogeneity of variance \nPval_ANOVA* tests if at least one group mean is different than the rest, adjusted for covariates (linear model without interactions) \nTukey* is a post-hoc pairwise test between groups, adjusted for covariates (linear model without interactions)\n')
       
     }else{
-      res <- data.frame(meansd2, medianiqr2, pval_shapiro, pval_levene, pval_bartlett, pval_chisq, pval_anova, pval_Tukey)
+      res <- data.frame(meansd2, medianiqr2, pval_shapiro, pval_levene, pval_bartlett, pval_chisq, pval_anova, pval_fdr, pval_Tukey)
       names(res) <- c(paste(levels(clin[,'group']),' (n=',summary(clin[,'group']), ') Mean +/- SD',sep=""),
                       paste(levels(clin[,'group']),' (n=',summary(clin[,'group']), ') Median (IQR)',sep=""),
-                      'Pval_Shapiro','Pval_Levene','Pval_Bartlett','Pval_Chisq','Pval_ANOVA*',
+                      'Pval_Shapiro','Pval_Levene','Pval_Bartlett','Pval_Chisq','Pval_ANOVA*', 'Pval_FDR',
                       paste(contrast," (Tukey*)",sep=""))
       
       row.names(res) <- colnames(omics)
-      cat("Pval_Shapiro tests for normality \nPval_Levene and Pval_Bartlett test for homogeneity of variance \nPval_Chisq tests if the frequency of Na's differs in at least one group than what you'd expect by chance \nPval_ANOVA* tests if at least one group mean is different than the rest, adjusted for covariates (linear model without interactions) \nTukey* is a post-hoc pairwise test between groups, adjusted for covariates (linear model without interactions)\n")
+      cat("Pval_Shapiro tests for normality \nPval_Levene and Pval_Bartlett test for homogeneity of variance \nPval_Chisq tests if the frequency of Na's differs in at least one group than what you'd expect by chance \nPval_ANOVA* tests if at least one group mean is different than the rest, adjusted for covariates (linear model without interactions), Pvalue FDR for Benjamini-Hochberg multiple testing correction \nTukey* is a post-hoc pairwise test between groups, adjusted for covariates (linear model without interactions)\n")
       
     }
       
