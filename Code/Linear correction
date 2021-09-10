@@ -1,7 +1,0 @@
-# This script performs the linear correction of omics data for a selection of covariates
-
-covariates=c("age.highest", "sex")
-# Add any variable from the clinical data which effect we want to remove.
-# ! Names in covariates has to be the same as in the clinical data.
-
-# protRegress = regressOutCovsEffect(dataSet=prot2, clinicalSet=clinical, covariates=covariates)
