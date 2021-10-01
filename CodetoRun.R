@@ -252,3 +252,49 @@ ggplot(pdata,
         axis.ticks.y = element_line(colour="white")) + 
   ggtitle("Stable patient allocations for K=3, K=6, K=8 and K=10 clusterings") 
   
+########################################
+##### Statistical power computation ####
+########################################
+
+install.packages("devtools")
+devtools::install_github("ConesaLab/MultiPower")
+install.packages(c("slam", "lpmodeler", "Rsymphony"))
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("RnaSeqSampleSize")
+
+library(slam)
+library(lpmodeler)
+library(Rsymphony)
+library(MultiPower)
+
+data<-list(t(prot2), t(metabo2))
+names(data)<-c("Proteomics", "Metabolomics")
+group<-cluster[[3]]$ConsensusClass
+group[which(group!=1)]<-3
+Protgroup<-Metabogroup<-group
+groups<-list(Protgroup, Metabogroup)
+type<-c(2, 2)
+
+
+# You may need to change the values of d0, max.size, omicPower and averagePower
+# d0 is the cohen's d value, related to the effect size you aim to be able to find 
+# (the smallest, the more patients are needed, see p6 for more details https://github.com/ConesaLab/MultiPower/blob/master/MultiPower_UsersGuide.pdf)
+# max.size is the maximal number of samples you are willing to go up to in order to achieve the minimal power 
+# omicPower is the lowest power value in any platform you are willing to tolerate
+# averagePower is the lowest power when combining platforms you are willing to tolerate
+
+test<-MultiPower(data=data, groups=groups, type=type, d0=.01, max.size=2000, omicPower=0.5, averagePower=0.8, fdr=0.05)
+
+# Using the sample data, I could find that in order to achieve 80% average statistical power,a FDR value of 0.05
+# and a d0 of 0.1 between cluster 1 and the rest at k=3, 
+# we would need at least 92 patients per group for proteomics and 78 for metabolomics
+
+# This other version does automatically all pairwise comparisons: 
+
+group<-cluster[[5]]$consensusClass
+Protgroup<-Metabogroup<-group
+groups_pw<-list(Protgroup, Metabogroup)
+
+test_pw<-MultiGroupPower(data=data, groups=groups_pw, type=type, d0=0.1, max.size=2000, omicPower=0.5, averagePower=0.8, fdr=0.05)
